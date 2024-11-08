@@ -14,14 +14,14 @@ moment.tz.setDefault("Africa/Lagos");
 
 const loginRouter = require('./auth/login');
 const signupRouter = require('./auth/signup');
-const tasksRouter = require('./controllers/tasks');
+const userRouter = require('./controllers/user');
 
 
 
 
 app.use(loginRouter);
 app.use(signupRouter);
-app.use("/tasks", tasksRouter);
+app.use("/user", userRouter);
 
 
 

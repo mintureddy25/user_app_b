@@ -5,19 +5,19 @@ const { generateToken } = require('./token');
 
 function validatePassword(password) {
   // Password validation logic goes here
-  if(!password || password?.length <1) return false
+  if (!password || password?.length < 1) return false;
   return true;
 }
 
 function validateEmail(email) {
   // Email validation logic goes here
-  if(!email || email?.length<5) return false
+  if (!email || email?.length < 5) return false;
   return true;
 }
 
-
 router.post('/login', async (req, res) => {
-  const {email, password } = req.body;
+  const { email, password } = req.body;
+
   if (!validateEmail(email)) {
     res.status(422).json({ message: 'Invalid user name' });
     return;
@@ -27,6 +27,7 @@ router.post('/login', async (req, res) => {
     res.status(422).json({ message: 'Invalid password' });
     return;
   }
+
   try {
     // Select the user from the database based on their email
     const [rows] = await pool.execute('SELECT * FROM users WHERE email = ?', [email]);
@@ -35,13 +36,20 @@ router.post('/login', async (req, res) => {
       const user = rows[0];
       // Verify the password
       if (password === user.password) {
+        // Update the last_login to the current timestamp (NOW())
+        await pool.execute(
+          'UPDATE users SET last_login = NOW() WHERE id = ?',
+          [user.id]
+        );
+
         // Generate a JWT token with the user ID and email
         const token = generateToken({ id: user.id, email: user.email });
-        res.json({ 
-          "id" : user.id,
-          "name":user.name,
-          "email":user.email,
-          token });
+        res.json({
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          token,
+        });
       } else {
         res.status(401).json({ message: 'Invalid credentials' });
       }
